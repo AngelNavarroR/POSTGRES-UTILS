@@ -8,21 +8,27 @@ DECLARE
 	ced_ruc_array TEXT[];
 
 BEGIN
-	estado = FALSE;
-	SELECT array_agg(x) INTO ced_ruc_array FROM regexp_split_to_table(ced_ruc, E'\\s*') x;
-	
-	IF LENGTH(ced_ruc) >= 10 THEN -- CEDULA
-		provincia = CAST(ced_ruc_array[1] AS INT) + CAST(ced_ruc_array[2] AS INT);
-		IF (provincia > 0 AND provincia <= 25) THEN
-			IF (CAST(ced_ruc_array[3] AS INT) < 6) THEN -- PERSONA 
-				estado = varificar_cedula(ced_ruc);
-			ELSIF (CAST(ced_ruc_array[3] AS INT) = 6) THEN -- SECTOR PULICO 
-				estado = varificar_sector_publico(ced_ruc);
-			ELSIF (CAST(ced_ruc_array[3] AS INT) = 9) THEN -- RUC 
-				estado = varificar_persona_juridica(ced_ruc);
+	estado = FALSE;	
+	IF (ced_ruc ~ '^[0-9]+$') THEN
+		SELECT array_agg(x) INTO ced_ruc_array FROM regexp_split_to_table(ced_ruc, E'\\s*') x;
+		IF LENGTH(ced_ruc) >= 10 THEN -- CEDULA
+			--RAISE NOTICE 'PROVINCIA %, %', CAST(ced_ruc_array[1] AS INT), CAST(ced_ruc_array[2] AS INT);
+			provincia = CAST(ced_ruc_array[1] AS INT) + CAST(ced_ruc_array[2] AS INT);
+			--RAISE NOTICE 'PROVINCIA %', provincia;
+			--RAISE NOTICE 'ced_ruc_array[2] %', ced_ruc_array[3];
+			IF (provincia > 0 AND provincia <= 25) THEN
+				IF (CAST(ced_ruc_array[3] AS INT) < 6) THEN -- PERSONA 
+					estado = varificar_cedula(ced_ruc);
+				ELSIF (CAST(ced_ruc_array[3] AS INT) = 6) THEN -- SECTOR PULICO 
+					estado = varificar_sector_publico(ced_ruc);
+				ELSIF (CAST(ced_ruc_array[3] AS INT) = 9) THEN -- RUC 
+					estado = varificar_persona_juridica(ced_ruc);
+				END IF;
 			END IF;
+		ELSE -- RUC 
+			estado = FALSE;
 		END IF;
-	ELSE -- MENOR A 10 EL NUMERO DE IDENTIFICACION 
+	ELSE 
 		estado = FALSE;
 	END IF;
 	RETURN estado;
@@ -44,6 +50,7 @@ DECLARE
 	ced_array TEXT[];
 
 BEGIN
+	-- CONVERTIMOS EN ARRAY EL NUMERO
 	i = 1;
 	SELECT array_agg(x) INTO ced_array FROM regexp_split_to_table(cedl, E'\\s*') x;
 	FOR i IN 1..9 BY 2 LOOP
@@ -53,7 +60,8 @@ BEGIN
 		END IF;
 		par = par + aux;
 	END LOOP;
--- VERIFICACION 
+	
+	-- VERIFICACION 
 	i = 2;
 	FOR i IN 2..9 BY 2 LOOP
 		impar = impar + CAST(ced_array[i] AS INT);
@@ -71,6 +79,9 @@ BEGIN
 		valido = false;
 	END IF;
 	RETURN valido;
+	EXCEPTION WHEN OTHERS THEN
+		RAISE NOTICE 'Identificacion: %', cedl; 
+		RETURN false;
 END;
 $BODY$ LANGUAGE plpgsql VOLATILE COST 100;
 
@@ -88,7 +99,6 @@ DECLARE
 	coeficiente int[9] = ARRAY[4, 3, 2, 7, 6, 5, 4, 3, 2];
 
 BEGIN
-	-- CONVERTIMOS EN ARRAY EL NUMERO
 	i = 1;
 	SELECT array_agg(x) INTO ced_array FROM regexp_split_to_table(cedl, E'\\s*') x;
 	verifi = CAST(ced_array[11] AS INT) + CAST(ced_array[12] AS INT) + CAST(ced_array[13] AS INT);
@@ -114,6 +124,9 @@ BEGIN
         valido = FALSE;        
 	END IF;
 	RETURN valido;
+	EXCEPTION WHEN OTHERS THEN
+		RAISE NOTICE 'RUC: %', cedl; 
+		RETURN false;
 END;
 $BODY$ LANGUAGE plpgsql VOLATILE COST 100;
 
@@ -131,7 +144,6 @@ DECLARE
 	coeficiente int[8] = ARRAY[3, 2, 7, 6, 5, 4, 3, 2 ];
 
 BEGIN
-	-- CONVERTIMOS EN ARRAY EL NUMERO
 	i = 1;
 	SELECT array_agg(x) INTO ced_array FROM regexp_split_to_table(cedl, E'\\s*') x;
 	verifi = CAST(ced_array[10] AS INT) + CAST(ced_array[11] AS INT) + CAST(ced_array[12] AS INT) + CAST(ced_array[13] AS INT);
@@ -157,5 +169,8 @@ BEGIN
         valido = FALSE;        
 	END IF;
 	RETURN valido;
+	EXCEPTION WHEN OTHERS THEN
+		RAISE NOTICE 'RUC PUBLICO: %', cedl; 
+		RETURN false;
 END;
 $BODY$ LANGUAGE plpgsql VOLATILE COST 100;
