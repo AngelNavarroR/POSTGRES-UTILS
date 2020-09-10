@@ -3,7 +3,7 @@
 
 #set timeout -1;
 
-export PGPASSWORD=sisapp98
+export PGPASSWORD=password
 ###########################
 ####### LOAD CONFIG #######
 ###########################
