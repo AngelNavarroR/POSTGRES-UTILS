@@ -6,9 +6,13 @@ sudo dnf install -y postgresql12-server
 sudo /usr/pgsql-12/bin/postgresql-12-setup initdb
 sudo systemctl enable postgresql-12
 sudo systemctl start postgresql-12
+sudo systemctl status postgresql-12
+sudo systemctl stop postgresql-12
+
+sudo yum install -y wal2json12
 
 
-yum install subscription-manager
+yum install -y subscription-manager
 
 sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 dnf config-manager --set-enabled powertools
