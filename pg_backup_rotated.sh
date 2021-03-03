@@ -1,9 +1,6 @@
 #!/bin/bash
 
-
-#set timeout -1;
-
-export PGPASSWORD=password
+export PGPASSWORD=sisapp98
 ###########################
 ####### LOAD CONFIG #######
 ###########################
@@ -146,8 +143,6 @@ function perform_backups()
 		if [ $ENABLE_PLAIN_BACKUPS = "yes" ]
 		then
 			echo "Plain backup of $DATABASE"
-			
-			#set PGPASSWORD=$PASSWORD
 			set -o pipefail
 			if ! pg_dump -Fp -h "$HOSTNAME" -U "$USERNAME" "$DATABASE" | gzip > $FINAL_BACKUP_DIR"$DATABASE".sql.gz.in_progress; then
 				echo "[!!ERROR!!] Failed to produce plain backup database $DATABASE" 1>&2
@@ -160,12 +155,12 @@ function perform_backups()
 
 		if [ $ENABLE_CUSTOM_BACKUPS = "yes" ]
 		then
-			echo "Custom backup of $DATABASE"
-			#set PGPASSWORD=$PASSWORD
-			if ! pg_dump -Fc -h "$HOSTNAME" -U "$USERNAME" "$DATABASE" -f $FINAL_BACKUP_DIR"$DATABASE".backup.in_progress; then
+			FILE_DATABASE=$DATABASE"`date +\%H-\%M-\%S`"
+			echo "Custom backup of $DATABASE final file $FILE_DATABASE"
+			if ! pg_dump -Fc -h "$HOSTNAME" -U "$USERNAME" "$DATABASE" -f $FINAL_BACKUP_DIR"$FILE_DATABASE".backup.in_progress; then
 				echo "[!!ERROR!!] Failed to produce custom backup database $DATABASE"
 			else
-				mv $FINAL_BACKUP_DIR"$DATABASE".backup.in_progress $FINAL_BACKUP_DIR"$DATABASE".backup
+				mv $FINAL_BACKUP_DIR"$FILE_DATABASE".backup.in_progress $FINAL_BACKUP_DIR"$FILE_DATABASE".backup
 			fi
 		fi
 
