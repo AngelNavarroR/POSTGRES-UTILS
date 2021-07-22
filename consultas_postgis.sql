@@ -10,3 +10,16 @@ ORDER BY area
 SELECT CAST(mz.gid AS bigint) AS gid,mz.nombre,mz.clave_cata "claveCata"  FROM geodata.predios_tx pt 
 INNER JOIN geodata.geo_vias mz ON ST_intersects(ST_BUFFER(mz.geom, 30), pt.geom) 
 WHERE pt.codigo = '100154570101621900000000' LIMIT 5
+
+
+-- search_path
+SHOW search_path;
+SET search_path TO bddimi, geodata,sgm_app,public;
+-- UPDATE SCHEMA POSTGIS
+ALTER DATABASE ib_bddimi SET 'search_path' = public,bddimi, geodata,sgm_app;
+UPDATE pg_extension SET extrelocatable = TRUE WHERE extname = 'postgis';
+ 
+ALTER EXTENSION postgis SET SCHEMA bddimi;
+
+
+
