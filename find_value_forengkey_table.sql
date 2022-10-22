@@ -30,3 +30,12 @@ $$
 	 RETURN out_table;*/
 	END;
 $$;
+
+
+/*
+Busca todos las tabla relacionestas y executa un selec a esa columna de cada tabla y devuelve ese valor, ejemplo: 
+
+SELECT * FROM get_references_values_catalogo('ctlg_item', NULL::BIGINT);
+
+SELECT get_references_values_catalogo('ctlg_item', NULL::BIGINT);
+*/
