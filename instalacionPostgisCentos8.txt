@@ -21,3 +21,5 @@ sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpm
 dnf config-manager --set-enabled powertools
 
 yum -y install postgis30_12-client postgis30_12-devel postgis30_12-docs postgis30_12-utils gdal
+-- Postgresql-14
+yum -y install postgis32_14-client postgis32_14-devel postgis32_14-docs postgis32_14-utils gdal
